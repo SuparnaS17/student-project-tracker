@@ -1,278 +1,182 @@
-```html
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Student Project Tracker</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+  <title>Student Project Tracker</title>
 
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f4f6f9;
-            color: #243047;
-            line-height: 1.6;
-        }
-
-        header {
-            background: #173b70;
-            color: white;
-            padding: 24px;
-            text-align: center;
-        }
-
-        header h1 {
-            margin: 0;
-        }
-
-        main {
-            max-width: 1000px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        section {
-            background: white;
-            margin-bottom: 24px;
-            padding: 24px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        }
-
-        h2 {
-            margin-top: 0;
-            color: #173b70;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 18px;
-        }
-
-        .form-field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        label {
-            font-weight: bold;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 11px;
-            border: 1px solid #cbd3df;
-            border-radius: 6px;
-            font: inherit;
-        }
-
-        input:focus,
-        select:focus {
-            outline: 2px solid #7ba7ed;
-            outline-offset: 1px;
-        }
-
-        .actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        button {
-            padding: 11px 18px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font: inherit;
-            font-weight: bold;
-        }
-
-        .primary-button {
-            background: #2459a9;
-            color: white;
-        }
-
-        .secondary-button {
-            background: #e7ebf2;
-            color: #243047;
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        th,
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #e1e6ee;
-        }
-
-        th {
-            background: #edf2f9;
-        }
-
-        .status {
-            display: inline-block;
-            padding: 3px 9px;
-            border-radius: 12px;
-            background: #e4edff;
-            color: #173b70;
-        }
-
-        .readiness {
-            border-left: 4px solid #29845b;
-        }
-
-        @media (max-width: 600px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            main {
-                margin-top: 18px;
-                padding: 0 12px;
-            }
-
-            section {
-                padding: 18px;
-            }
-        }
-    </style>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
 </head>
 
 <body>
-    <header>
-        <h1>Student Project Tracker</h1>
-        <p>Plan your work. Track your progress. Meet your deadlines.</p>
+  <main class="dashboard">
+
+    <!-- Dashboard Header -->
+    <header class="dashboard-header">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true"></div>
+
+        <div>
+          <p class="eyebrow">ELECTRONICS WORKSPACE</p>
+          <h1>Project Tracker<span class="accent">.</span></h1>
+          <p class="subtitle">
+            Plan it. Build it. Make it happen.
+          </p>
+        </div>
+      </div>
+
+      <div class="header-badge">
+        <span class="online-dot"></span>
+        YOUR WORKSPACE
+      </div>
     </header>
 
-    <main>
-        <section aria-labelledby="intro-heading">
-            <h2 id="intro-heading">Welcome to Your Project Workspace</h2>
+    <!-- Statistics -->
+    <section class="stats-grid" aria-label="Project statistics">
 
-            <p>
-                Student Project Tracker helps you organize academic projects,
-                monitor their progress, and keep track of important deadlines.
-                Use the form below to record a project and view your project
-                details in one place.
-            </p>
-        </section>
+      <article class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label">TOTAL PROJECTS</span>
+          <span class="stat-icon" aria-hidden="true">▦</span>
+        </div>
+        <p class="stat-number" id="total-projects">0</p>
+        <p class="stat-caption">Projects in your workspace</p>
+      </article>
 
-        <section aria-labelledby="form-heading">
-            <h2 id="form-heading">Add a Project</h2>
+      <article class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label">IN PROGRESS</span>
+          <span class="stat-icon cyan" aria-hidden="true">◷</span>
+        </div>
+        <p class="stat-number" id="active-projects">0</p>
+        <p class="stat-caption">Currently being developed</p>
+      </article>
 
-            <form id="project-form">
-                <div class="form-grid">
-                    <div class="form-field">
-                        <label for="project-name">Project Name</label>
-                        <input
-                            type="text"
-                            id="project-name"
-                            name="projectName"
-                            placeholder="Enter project name"
-                            required
-                        >
-                    </div>
+      <article class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label">COMPLETED</span>
+          <span class="stat-icon green" aria-hidden="true">✓</span>
+        </div>
+        <p class="stat-number" id="completed-projects">0</p>
+        <p class="stat-caption">Projects finished</p>
+      </article>
 
-                    <div class="form-field">
-                        <label for="course">Subject / Course</label>
-                        <input
-                            type="text"
-                            id="course"
-                            name="course"
-                            placeholder="Enter subject or course"
-                            required
-                        >
-                    </div>
+    </section>
 
-                    <div class="form-field">
-                        <label for="project-status">Project Status</label>
-                        <select id="project-status" name="status" required>
-                            <option value="Not Started">Not Started</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Completed">Completed</option>
-                        </select>
-                    </div>
+    <!-- Add Project Form -->
+    <section class="panel form-panel" aria-labelledby="form-title">
 
-                    <div class="form-field">
-                        <label for="due-date">Due Date</label>
-                        <input
-                            type="date"
-                            id="due-date"
-                            name="dueDate"
-                            required
-                        >
-                    </div>
-                </div>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">YOUR NEXT BIG IDEA</p>
+          <h2 id="form-title">Add a Project</h2>
+          <p class="section-description">
+            Turn your electronics ideas into reality.
+          </p>
+        </div>
 
-                <div class="actions">
-                    <button type="submit" class="primary-button">
-                        Add Project
-                    </button>
+        <div class="section-icon" aria-hidden="true">＋</div>
+      </div>
 
-                    <button
-                        type="reset"
-                        class="secondary-button"
-                    >
-                        Clear Form
-                    </button>
-                </div>
-            </form>
-        </section>
+      <form id="project-form">
 
-        <section aria-labelledby="projects-heading">
-            <h2 id="projects-heading">My Projects</h2>
+        <div class="form-grid">
 
-            <p>
-                Projects you add will be displayed in the table below
-                once project-saving functionality is implemented.
-            </p>
+          <div class="form-field full-width">
+            <label for="name">Project Name <span class="required">*</span></label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="e.g. Smart Home Automation"
+              required
+              maxlength="80"
+            >
+          </div>
 
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th scope="col">Project Name</th>
-                            <th scope="col">Subject / Course</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Due Date</th>
-                        </tr>
-                    </thead>
+          <div class="form-field">
+            <label for="status">Project Status</label>
+            <select id="status" name="status">
+              <option value="Planned">Planned</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
 
-                    <tbody id="project-list">
-                        <tr id="empty-state">
-                            <td colspan="4">
-                                No projects have been added yet.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+          <div class="form-field">
+            <label for="start-date">Start Date</label>
+            <input
+              type="date"
+              id="start-date"
+              name="startDate"
+            >
+          </div>
 
-        <section class="readiness" aria-labelledby="readiness-heading">
-            <h2 id="readiness-heading">Interface Readiness</h2>
-            <p>
-                The initial interface is ready. The project form, table,
-                labels, and responsive layout are in place.
-            </p>
-        </section>
-    </main>
+          <div class="form-field full-width">
+            <label for="deadline">Deadline</label>
+            <input
+              type="date"
+              id="deadline"
+              name="deadline"
+            >
+          </div>
+
+        </div>
+
+        <div class="form-actions">
+          <button id="save-button" type="submit">
+            <span aria-hidden="true">＋</span>
+            Save Project
+          </button>
+
+          <button id="cancel-button" type="button" hidden>
+            Cancel
+          </button>
+        </div>
+
+      </form>
+
+      <p id="message" role="status" aria-live="polite"></p>
+
+    </section>
+
+    <!-- Project List -->
+    <section class="panel projects-panel" aria-labelledby="list-title">
+
+      <div class="section-heading projects-heading">
+        <div>
+          <p class="eyebrow">YOUR WORK, ORGANIZED</p>
+          <h2 id="list-title">My Projects</h2>
+          <p class="section-description">
+            Keep track of every idea, deadline, and milestone.
+          </p>
+        </div>
+
+        <span class="project-count" id="project-count">0 projects</span>
+      </div>
+
+      <!-- Empty state appears when there are no projects -->
+      <div id="empty-state" class="empty-state">
+        <div class="empty-icon" aria-hidden="true">⌘</div>
+        <h3>Your workspace is waiting</h3>
+        <p>
+          Every great invention starts with an idea.
+          Add your first project to get started.
+        </p>
+      </div>
+
+      <!-- JavaScript will render project items here -->
+      <ul id="project-list" aria-label="Your projects"></ul>
+
+    </section>
+
+    <footer class="dashboard-footer">
+      <p>BUILT FOR IDEAS. DESIGNED FOR PROGRESS. <span>⚡</span></p>
+    </footer>
+
+  </main>
 </body>
 </html>
-```
