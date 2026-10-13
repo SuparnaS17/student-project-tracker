@@ -342,6 +342,21 @@ form.addEventListener("submit", event => {
   if (!validateProject(name, startDate, deadline)) {
     return;
   }
+  
+  const duplicateExists = projects.some(project =>
+    project.name.trim().toLowerCase() === name.toLowerCase() &&
+    project.id !== editingId
+  );
+
+  if (duplicateExists) {
+    showMessage(
+      "A project with this name already exists. Please choose another name.",
+      "error"
+    );
+    nameInput.focus();
+    return;
+  }
+
 
   const projectData = {
     name,
