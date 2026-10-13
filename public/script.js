@@ -1,5 +1,3 @@
-const STORAGE_KEY = "midnightCircuitProjects";
-
 const form = document.querySelector("#project-form");
 const nameInput = document.querySelector("#name");
 const statusInput = document.querySelector("#status");
@@ -14,27 +12,13 @@ const totalProjects = document.querySelector("#total-projects");
 const activeProjects = document.querySelector("#active-projects");
 const completedProjects = document.querySelector("#completed-projects");
 const projectCount = document.querySelector("#project-count");
+const formTitle = document.querySelector("#form-title");
 
-let projects = loadProjects();
+const STORAGE_KEY = "workshop-projects-v1";
+
+let projects = [];
 let editingId = null;
-
-function loadProjects() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    const parsed = saved ? JSON.parse(saved) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveProjects() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
-  } catch {
-    showMessage("Could not save projects in this browser.", "error");
-  }
-}
+let storageAvailable = true;
 
 function createProjectId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -61,7 +45,6 @@ function updateDateConstraints() {
 function validateProject(name, startDate, deadline) {
   if (!name.trim()) {
     showMessage("Please enter a project name.", "error");
-    nameInput.focus();
     return false;
   }
 
@@ -74,19 +57,42 @@ function validateProject(name, startDate, deadline) {
   return true;
 }
 
+function updateSaveButton() {
+  saveButton.replaceChildren();
+
+  const icon = document.createElement("span");
+  icon.setAttribute("aria-hidden", "true");
+  icon.textContent = editingId !== null ? "✓" : "＋";
+
+  saveButton.append(
+    icon,
+    document.createTextNode(
+      editingId !== null ? " Save changes" : " Save Project"
+    )
+  );
+}
+
 function resetForm() {
   form.reset();
   editingId = null;
-  saveButton.innerHTML = "<span aria-hidden=\"true\">＋</span> Save Project";
+
+  updateSaveButton();
   cancelButton.hidden = true;
+
+  if (formTitle) {
+    formTitle.textContent = "Add a Project";
+  }
+
   updateDateConstraints();
 }
 
 function updateStatistics() {
   totalProjects.textContent = projects.length;
+
   activeProjects.textContent = projects.filter(
     project => project.status === "In Progress"
   ).length;
+
   completedProjects.textContent = projects.filter(
     project => project.status === "Completed"
   ).length;
@@ -97,13 +103,21 @@ function updateStatistics() {
 
 function createElement(tag, className, text) {
   const element = document.createElement(tag);
-  if (className) element.className = className;
-  if (text !== undefined) element.textContent = text;
+
+  if (className) {
+    element.className = className;
+  }
+
+  if (text !== undefined) {
+    element.textContent = text;
+  }
+
   return element;
 }
 
 function createStatusBadge(status) {
   const badge = createElement("span", "status-badge", status);
+
   const classes = {
     "Planned": "status-planned",
     "In Progress": "status-in-progress",
@@ -115,9 +129,12 @@ function createStatusBadge(status) {
 }
 
 function formatDate(dateString) {
-  if (!dateString) return "Not set";
+  if (!dateString) {
+    return "Not set";
+  }
 
   const date = new Date(`${dateString}T00:00:00`);
+
   return date.toLocaleDateString("en-IN", {
     day: "numeric",
     month: "short",
@@ -153,8 +170,10 @@ function createProjectDates(project) {
       );
     } else {
       const remainingDays = Math.ceil(
-        (new Date(`${project.deadline}T00:00:00`) -
-          new Date(`${today}T00:00:00`)) / 86400000
+        (
+          new Date(`${project.deadline}T00:00:00`) -
+          new Date(`${today}T00:00:00`)
+        ) / 86400000
       );
 
       if (remainingDays <= 3) {
@@ -169,16 +188,37 @@ function createProjectDates(project) {
   return container;
 }
 
+function createIconButton(className, iconText, label, onClick) {
+  const button = createElement("button", className);
+  button.type = "button";
+  button.setAttribute("aria-label", label);
+  button.title = label;
+
+  const icon = createElement("span", "action-icon", iconText);
+  icon.setAttribute("aria-hidden", "true");
+
+  button.append(icon);
+  button.addEventListener("click", onClick);
+
+  return button;
+}
+
 function createProjectActions(project) {
   const actions = createElement("div", "project-actions");
 
-  const editButton = createElement("button", "edit-button", "Edit");
-  editButton.type = "button";
-  editButton.addEventListener("click", () => startEditing(project.id));
+  const editButton = createIconButton(
+    "edit-button",
+    "✎",
+    `Edit ${project.name}`,
+    () => startEditing(project.id)
+  );
 
-  const deleteButton = createElement("button", "delete-button", "Delete");
-  deleteButton.type = "button";
-  deleteButton.addEventListener("click", () => deleteProject(project.id));
+  const deleteButton = createIconButton(
+    "delete-button",
+    "🗑",
+    `Delete ${project.name}`,
+    () => deleteProject(project.id)
+  );
 
   actions.append(editButton, deleteButton);
   return actions;
@@ -190,9 +230,15 @@ function createProjectCard(project) {
   const top = createElement("div", "project-card-top");
   const title = createElement("h3", "project-title", project.name);
   const badge = createStatusBadge(project.status);
+
   top.append(title, badge);
 
-  item.append(top, createProjectDates(project), createProjectActions(project));
+  item.append(
+    top,
+    createProjectDates(project),
+    createProjectActions(project)
+  );
+
   return item;
 }
 
@@ -210,39 +256,79 @@ function renderProjects() {
 
 function startEditing(id) {
   const project = projects.find(item => item.id === id);
-  if (!project) return;
 
-  editingId = id;
+  if (!project) {
+    return;
+  }
+
+  editingId = project.id;
+
   nameInput.value = project.name;
   statusInput.value = project.status;
   startDateInput.value = project.startDate || "";
   deadlineInput.value = project.deadline || "";
+  nameInput.focus();
 
-  saveButton.innerHTML = "<span aria-hidden=\"true\">✓</span> Update Project";
+  updateSaveButton();
   cancelButton.hidden = false;
+
+  if (formTitle) {
+    formTitle.textContent = "Edit Project";
+  }
 
   updateDateConstraints();
   showMessage("Editing project. Make your changes below.");
-  nameInput.focus();
+}
 
-  form.scrollIntoView({ behavior: "smooth", block: "center" });
+function resetFormAndRender() {
+  resetForm();
+  renderProjects();
+}
+
+function saveProjects() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+    storageAvailable = true;
+    return true;
+  } catch {
+    storageAvailable = false;
+    showMessage(
+      "Your changes are visible, but could not be saved in this browser.",
+      "error"
+    );
+    return false;
+  }
 }
 
 function deleteProject(id) {
   const project = projects.find(item => item.id === id);
-  if (!project) return;
 
-  if (!window.confirm(`Delete "${project.name}"?`)) return;
+  if (!project) {
+    return;
+  }
 
+  const confirmed = window.confirm(`Delete "${project.name}"?`);
+
+  if (!confirmed) {
+    return;
+  }
+
+  const previousProjects = projects;
   projects = projects.filter(item => item.id !== id);
 
   if (editingId === id) {
     resetForm();
   }
 
-  saveProjects();
   renderProjects();
-  showMessage("Project deleted successfully.");
+  saveProjects();
+
+  if (storageAvailable) {
+    showMessage("Project deleted successfully.");
+  }
+
+  // Keep the deleted project removed in the current page even if saving fails.
+  void previousProjects;
 }
 
 form.addEventListener("submit", event => {
@@ -253,7 +339,9 @@ form.addEventListener("submit", event => {
   const startDate = startDateInput.value;
   const deadline = deadlineInput.value;
 
-  if (!validateProject(name, startDate, deadline)) return;
+  if (!validateProject(name, startDate, deadline)) {
+    return;
+  }
 
   const projectData = {
     name,
@@ -262,14 +350,29 @@ form.addEventListener("submit", event => {
     deadline
   };
 
-  if (editingId) {
-    projects = projects.map(project =>
-      project.id === editingId
-        ? { ...project, ...projectData }
-        : project
+  let successMessage;
+
+  if (editingId !== null) {
+    const projectIndex = projects.findIndex(
+      project => project.id === editingId
     );
 
-    showMessage("Project updated successfully.");
+    if (projectIndex === -1) {
+      resetForm();
+      renderProjects();
+      showMessage(
+        "That project could not be found. Please try again.",
+        "error"
+      );
+      return;
+    }
+
+    projects[projectIndex] = {
+      ...projects[projectIndex],
+      ...projectData
+    };
+
+    successMessage = "Project updated successfully.";
   } else {
     projects.push({
       id: createProjectId(),
@@ -277,12 +380,15 @@ form.addEventListener("submit", event => {
       createdAt: new Date().toISOString()
     });
 
-    showMessage("Project added successfully.");
+    successMessage = "Project added successfully.";
   }
 
-  saveProjects();
   renderProjects();
   resetForm();
+
+  if (saveProjects()) {
+    showMessage(successMessage);
+  }
 });
 
 cancelButton.addEventListener("click", () => {
@@ -293,5 +399,64 @@ cancelButton.addEventListener("click", () => {
 startDateInput.addEventListener("change", updateDateConstraints);
 deadlineInput.addEventListener("change", updateDateConstraints);
 
+function loadProjects() {
+  let storedData;
+
+  try {
+    storedData = localStorage.getItem(STORAGE_KEY);
+  } catch {
+    storageAvailable = false;
+    showMessage(
+      "Browser storage is unavailable. Projects may not be saved.",
+      "error"
+    );
+    renderProjects();
+    return;
+  }
+
+  if (storedData === null) {
+    projects = [];
+    renderProjects();
+    return;
+  }
+
+  try {
+    const parsedData = JSON.parse(storedData);
+
+    const validArray =
+      Array.isArray(parsedData) &&
+      parsedData.every(project =>
+        project !== null &&
+        typeof project === "object" &&
+        typeof project.id === "string" &&
+        typeof project.name === "string" &&
+        typeof project.status === "string" &&
+        typeof (project.startDate ?? "") === "string" &&
+        typeof (project.deadline ?? "") === "string"
+      );
+
+    if (!validArray) {
+      projects = [];
+      renderProjects();
+      showMessage(
+        "Saved project data is invalid. It has not been overwritten.",
+        "error"
+      );
+      return;
+    }
+
+    projects = parsedData;
+    renderProjects();
+  } catch {
+    projects = [];
+    renderProjects();
+    showMessage(
+      "Saved project data could not be read. It has not been overwritten.",
+      "error"
+    );
+  }
+}
+
+updateSaveButton();
 updateDateConstraints();
-renderProjects();
+loadProjects();

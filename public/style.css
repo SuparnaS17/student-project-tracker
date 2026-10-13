@@ -906,28 +906,161 @@ delete-button {
               transform 0.2s ease;
 }
 
-.delete-button::before {
-  content: "🗑️";
-  font-size: 14px;
+
+/* 18. Polished project action buttons */
+
+.project-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border);
 }
 
-.delete-button:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 75, 100, 0.28),
-    rgba(255, 75, 100, 0.14)
-  );
-  border-color: rgba(255, 90, 115, 0.65);
-  box-shadow: 0 5px 18px rgba(255, 75, 100, 0.15);
+.project-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  min-width: 112px;
+  min-height: 44px;
+  padding: 9px 14px;
+
+  border: 1px solid var(--border-bright);
+  border-radius: 12px;
+
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.action-icon {
+  display: grid;
+  place-items: center;
+
+  width: 25px;
+  height: 25px;
+  flex-shrink: 0;
+
+  border-radius: 7px;
+  font-size: 17px;
+  line-height: 1;
+}
+
+/* Edit: violet circuit style */
+
+.project-actions .edit-button {
+  border-color: rgba(167, 139, 250, 0.35);
+  background: rgba(167, 139, 250, 0.09);
+  color: var(--violet-bright);
+}
+
+.edit-button .action-icon {
+  background: rgba(167, 139, 250, 0.15);
+}
+
+.project-actions .edit-button:hover {
+  border-color: var(--violet);
+  background: rgba(167, 139, 250, 0.17);
+  box-shadow: 0 5px 16px rgba(167, 139, 250, 0.12);
   transform: translateY(-2px);
 }
 
-.delete-button:active {
-  transform: translateY(0);
-  box-shadow: none;
+/* Delete: subtle red style */
+
+.project-actions .delete-button {
+  border-color: rgba(253, 164, 175, 0.3);
+  background: rgba(253, 164, 175, 0.06);
+  color: var(--red);
 }
 
-.delete-button:focus-visible {
-  outline: 2px solid #ff7b91;
-  outline-offset: 3px;
+.delete-button .action-icon {
+  background: rgba(253, 164, 175, 0.12);
+}
+
+.project-actions .delete-button:hover {
+  border-color: var(--red);
+  background: rgba(253, 164, 175, 0.13);
+  box-shadow: 0 5px 16px rgba(253, 164, 175, 0.1);
+  transform: translateY(-2px);
+}
+
+.project-actions button:active {
+  transform: translateY(0);
+}
+
+/* Make the Add Project action stand out */
+
+#save-button {
+  min-width: 165px;
+  border-radius: 12px;
+  letter-spacing: 0.15px;
+}
+
+/* Small screens */
+
+@media (max-width: 480px) {
+  .project-actions {
+    justify-content: flex-start;
+    gap: 10px;
+  }
+
+  .project-actions button {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 10px;
+  }
+
+  #save-button {
+    width: 100%;
+  }
+}
+
+/* 19. Cleaner project dates */
+
+.project-dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.project-date {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(8, 9, 15, 0.55);
+}
+
+.date-label {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.project-date > span:not(.date-label):not(.deadline-warning) {
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.project-date > span:not(.date-label):not(.deadline-warning):has(+ .deadline-warning) {
+  margin-bottom: 2px;
+}
+
+@media (max-width: 480px) {
+  .project-dates {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
 }
