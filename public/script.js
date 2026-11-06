@@ -300,36 +300,42 @@ function saveProjects() {
   }
 }
 
-function deleteProject(id) {
+
+async function deleteProject(id) {
   const project = projects.find(item => item.id === id);
 
-  if (!project) {
-    return;
-  }
+  if (!project) return;
 
   const confirmed = window.confirm(`Delete "${project.name}"?`);
+  if (!confirmed) return;
 
-  if (!confirmed) {
-    return;
-  }
+  try {
+    const response = await fetch(`/api/projects/${id}`, {
+      method: "DELETE"
+    });
 
-  const previousProjects = projects;
-  projects = projects.filter(item => item.id !== id);
+    const result = await response.json();
 
-  if (editingId === id) {
-    resetForm();
-  }
+    if (!response.ok) {
+      throw new Error(result.error || "Could not delete the project.");
+    }
 
-  renderProjects();
-  saveProjects();
+    projects = projects.filter(item => item.id !== id);
 
-  if (storageAvailable) {
+    if (editingId === id) {
+      resetForm();
+    }
+
+    renderProjects();
     showMessage("Project deleted successfully.");
+  } catch (error) {
+    showMessage(
+      error.message || "Could not connect to the server.",
+      "error"
+    );
   }
-
-  // Keep the deleted project removed in the current page even if saving fails.
-  void previousProjects;
 }
+
 
 form.addEventListener("submit", event => {
   event.preventDefault();
